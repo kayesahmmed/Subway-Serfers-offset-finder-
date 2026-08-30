@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subway Surfers RVA Dumper | ModX Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="ambient-light light-1"></div>
+    <div class="ambient-light light-2"></div>
+    <div class="ambient-light light-3"></div>
+
+    <div class="main-wrapper">
+        <header>
+            <div class="brand-badge">MODX LAB</div>
+            <h1>Subway Surfers RVA Dumper</h1>
+            <p>Advanced IL2CPP Offset Extractor by Namespace, Class & Method</p>
+        </header>
+
+        <div class="glass-panel upload-container">
+            <div class="file-upload">
+                <input type="file" id="dumpFile" accept=".cs,.txt">
+                <button id="processBtn">Process File</button>
+            </div>
+            <div id="statusText" class="status">Waiting for dump.cs file...</div>
+        </div>
+
+        <div class="glass-panel table-wrapper">
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th>Feature / Use Case</th>
+                        <th>Class</th>
+                        <th>Method</th>
+                        <th>Offset(RVA)</th>
+                        <th>Return Type</th>
+                        <th>Mod Logic / Action</th>
+                        <th>Module</th>
+                        <th>Namespace</th>
+                        <th>Parameters</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="download-section">
+            <button id="downloadBtn" class="btn-success" style="display: none;">Download Extracted File</button>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 <span>ModX Lab</span>. All rights reserved.
+    </footer>
+
+    <script>
+        const functionsData = [
+            { feature: "CheckFrontalImpact", module: "Assembly-CSharp.dll", namespace: "SYBO.RunnerCore.Character", className: "CharacterMotor", method: "CheckFrontalImpact", parameters: 1, returnType: "bool", modLogic: "return false" },
+            { feature: "CheckSideImpact", module: "Assembly-CSharp.dll", namespace: "SYBO.RunnerCore.Character", className: "CharacterMotor", method: "CheckSideImpact", parameters: 1, returnType: "bool", modLogic: "return false" },
+            { feature: "Unlimited Jump", module: "Assembly-CSharp.dll", namespace: "SYBO.RunnerCore.Character", className: "CharacterMotorAbilities", method: "get_JumpLimit", parameters: 0, returnType: "int", modLogic: "return 999" },
+            { feature: "Jump Height", module: "Assembly-CSharp.dll", namespace: "SYBO.RunnerCore.Character", className: "CharacterMotorAbilities", method: "get_JumpHeight", parameters: 0, returnType: "float", modLogic: "return 35.0" },
+            { feature: "Auto Revive", module: "Assembly-CSharp.dll", namespace: "SYBO.Subway", className: "StumbleBehaviour", method: "IsAutoReviveEnabled", parameters: 0, returnType: "bool", modLogic: "return true" },
+            { feature: "Power Duration", module: "Assembly-CSharp.dll", namespace: "SYBO.RunnerCore.Powers", className: "PowerConfig", method: "GetDuration", parameters: 1, returnType: "float", modLogic: "return 999.0" },
+            { feature: "0 Lane Change Duration", module: "Assembly-CSharp.dll", namespace: "SYBO.RunnerCore.Character", className: "CharacterMotorAbilities", method: "get_LaneChangeDuration", parameters: 0, returnType: "float", modLogic: "return 0.0" },
+            { feature: "Score Multiplier", module: "Assembly-CSharp.dll", namespace: "SYBO.Subway", className: "ScoreMultiplierManager", method: "get_BaseMultiplierSum", parameters: 0, returnType: "int", modLogic: "return 999999" },
+            { feature: "DetectCollisions", module: "UnityEngine.PhysicsModule.dll", namespace: "UnityEngine", className: "CharacterController", method: "get_detectCollisions", parameters: 0, returnType: "bool", modLogic: "return false" },
+            { feature: "Unlimited Shop", module: "SYBO.Subway.Core.CommonData.dll", namespace: "SYBO.Subway.Core.CommonData", className: "Currency", method: "get_IsIAP", parameters: 0, returnType: "bool", modLogic: "return false" },
+            { feature: "Unlimited Coin", module: "SYBO.Subway.Core.ProfileData.dll", namespace: "SYBO.Subway.Core.ProfileData", className: "WalletModel", method: "GetCurrency", parameters: 1, returnType: "int", modLogic: "return 99999999" }
+        ];
+
+        let processedResults = [];
+
+        document.getElementById('dumpFile').addEventListener('change', function() {
+            const statusText = document.getElementById('statusText');
+            if (this.files.length > 0) {
+                statusText.innerText = "File loaded. Ready to process.";
+                statusText.style.color = "#4facfe";
+                statusText.style.textShadow = "0 0 10px rgba(79, 172, 254, 0.5)";
+            } else {
+                statusText.innerText = "Waiting for dump.cs file...";
+                statusText.style.color = "#94a3b8";
+                statusText.style.textShadow = "none";
+            }
+        });
+
+        document.getElementById('processBtn').addEventListener('click', () => {
+            const fileInput = document.getElementById('dumpFile').files[0];
+            const statusText = document.getElementById('statusText');
+            const tableBody = document.getElementById('tableBody');
+
+            if (!fileInput) {
+                statusText.innerText = "Error: Please upload a dump.cs file first!";
+                statusText.style.color = "#ff4d4d";
+                statusText.style.textShadow = "0 0 10px rgba(255, 77, 77, 0.5)";
+                return;
+            }
+
+            statusText.innerText = "Scanning IL2CPP Structures... Please wait.";
+            statusText.style.color = "#00f2fe";
+            statusText.style.textShadow = "0 0 10px rgba(0, 242, 254, 0.5)";
+            tableBody.innerHTML = ""; 
+            document.getElementById('downloadBtn').style.display = 'none';
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const lines = e.target.result.split('\n');
+                setTimeout(() => {
+                    processOffsetsWithNamespace(lines);
+                    statusText.innerText = "Successfully Extracted RVA Offsets!";
+                    statusText.style.color = "#10b981";
+                    statusText.style.textShadow = "0 0 10px rgba(16, 185, 129, 0.5)";
+                }, 600);
+            };
+            reader.readAsText(fileInput);
+        });
+
+        function processOffsetsWithNamespace(lines) {
+            const tableBody = document.getElementById('tableBody');
+            processedResults = JSON.parse(JSON.stringify(functionsData)); 
+
+            processedResults.forEach(func => func.rva = "Not Found");
+
+            let currentNamespace = "";
+            let currentClass = "";
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+
+                const nsMatch = line.match(/\/\/\s*Namespace:\s*([^\s]+)/);
+                if (nsMatch) {
+                    currentNamespace = nsMatch[1].trim();
+                    continue; 
+                }
+
+                const classMatch = line.match(/(?:class|struct|interface|enum)\s+([a-zA-Z0-9_]+)/);
+                if (classMatch && !line.includes("(")) {
+                    currentClass = classMatch[1].trim();
+                    continue; 
+                }
+
+                for (let j = 0; j < processedResults.length; j++) {
+                    const func = processedResults[j];
+                    if (func.rva !== "Not Found") continue; 
+
+                    if (currentNamespace === func.namespace && currentClass === func.className) {
+                        const methodPattern1 = ` ${func.method}(`;
+                        const methodPattern2 = ` ${func.method} (`;
+
+                        if (line.includes(methodPattern1) || line.includes(methodPattern2)) {
+                            let rvaMatch = (i > 0 ? lines[i - 1] : "").match(/RVA:\s*(0x[\da-fA-F]+)/i);
+                            if (!rvaMatch && i > 1) {
+                                rvaMatch = lines[i - 2].match(/RVA:\s*(0x[\da-fA-F]+)/i);
+                            }
+
+                            if (rvaMatch) {
+                                func.rva = rvaMatch[1];
+                            }
+                        }
+                    }
+                }
+            }
+
+            processedResults.forEach((func, index) => {
+                const tr = document.createElement('tr');
+                tr.style.animationDelay = `${index * 0.05}s`;
+                tr.classList.add('fade-in');
+                
+                const rvaColor = func.rva === "Not Found" ? "#ff4d4d" : "#10b981";
+                const rvaShadow = func.rva === "Not Found" ? "rgba(255, 77, 77, 0.4)" : "rgba(16, 185, 129, 0.4)";
+                
+                tr.innerHTML = `
+                    <td class="feature-text">${func.feature}</td>
+                    <td><span class="badge badge-blue">${func.className}</span></td>
+                    <td class="method-text">${func.method}</td>
+                    <td style="color: ${rvaColor}; text-shadow: 0 0 8px ${rvaShadow}; font-weight: 700; font-family: 'Courier New', monospace; font-size: 16px; letter-spacing: 1px;">${func.rva}</td>
+                    <td><span class="badge badge-orange">${func.returnType}</span></td>
+                    <td><span class="mod-logic">${func.modLogic}</span></td>
+                    <td class="dim-text">${func.module}</td>
+                    <td class="dim-text">${func.namespace}</td>
+                    <td class="param-text">${func.parameters}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            document.getElementById('downloadBtn').style.display = 'inline-flex';
+        }
+
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            let fileContent = "";
+            processedResults.forEach(res => {
+                fileContent += `//${res.feature}\n`;
+                fileContent += `//Offset(RVA): ${res.rva}\n`;
+                fileContent += `Module: ${res.module}\n`;
+                fileContent += `Namespace: ${res.namespace}\n`;
+                fileContent += `Class: ${res.className}\n`;
+                fileContent += `Method: ${res.method}\n`;
+                fileContent += `Parameters: ${res.parameters}\n`;
+                fileContent += `Return Type: ${res.returnType}\n`;
+                fileContent += `Mod Logic / Action: ${res.modLogic}\n\n`;
+            });
+
+            const blob = new Blob([fileContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'SubwaySurfers_ModX_Offsets.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
