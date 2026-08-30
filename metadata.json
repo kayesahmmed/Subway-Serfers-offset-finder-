@@ -1,8 +1,0 @@
-{
-  "name": "Subway Surfers RVA Dumper",
-  "description": "Advanced IL2CPP Offset Extractor by Namespace, Class & Method for Subway Surfers",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}
