@@ -24,7 +24,8 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
-    overflow-x: hidden;
+    overflow-x: auto; /* changed from hidden to allow horizontal scroll on forced desktop */
+    min-width: 1200px; /* force desktop mode */
 }
 
 * {
@@ -101,7 +102,6 @@ header {
     letter-spacing: 4px;
     margin-bottom: 24px;
     box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
-    text-transform: uppercase;
 }
 
 header h1 {
@@ -121,6 +121,7 @@ header p {
     font-weight: 400;
     letter-spacing: 1px;
     margin: 0;
+    white-space: nowrap;
 }
 
 .glass-panel {
@@ -231,6 +232,7 @@ button:active {
     font-size: 15px;
     letter-spacing: 0.5px;
     transition: all 0.3s ease;
+    white-space: nowrap;
 }
 
 .table-wrapper {
@@ -266,6 +268,7 @@ table {
 th, td {
     padding: 22px 24px;
     border-bottom: 1px solid var(--border-glass);
+    white-space: nowrap;
 }
 
 th {
